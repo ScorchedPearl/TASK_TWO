@@ -9,19 +9,16 @@ import {
   LockIcon, 
   CheckCircle, 
   XCircle, 
-  ChefHat, 
-  Sparkles, 
-  Star,
-  Utensils,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useSearchParams } from 'next/navigation';
+import { GridBackground } from "../_components/bg";
 
 export default function PasswordResetPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const router=useRouter();
-  const navigate=router.push;
+  const router = useRouter();
+  const navigate = router.push;
   const searchParams = useSearchParams();
   const { resetPassword } = useUser();
 
@@ -80,45 +77,30 @@ export default function PasswordResetPage() {
 
   if (!token) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 text-white">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff22_1px,transparent_1px),linear-gradient(to_bottom,#ffffff22_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
-        </div>
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white dark:bg-black text-black dark:text-white">
+        <GridBackground></GridBackground>
 
-        <div className="absolute top-20 left-20 opacity-80">
-          <ChefHat className="w-10 h-10" />
-        </div>
-        <div className="absolute top-40 right-32 opacity-70">
-          <Sparkles className="w-8 h-8" />
-        </div>
-        <div className="absolute bottom-32 left-32 opacity-60">
-          <Star className="w-12 h-12" />
-        </div>
-        <div className="absolute bottom-20 right-20 opacity-50">
-          <Utensils className="w-6 h-6" />
-        </div>
-
-        <Card className="w-[400px] bg-slate-900/50 dark:bg-slate-950/50 backdrop-blur-xl shadow-xl rounded-lg border border-slate-700">
+        <Card className="w-[400px] bg-white/95 dark:bg-black/95 backdrop-blur-xl shadow-glow rounded-lg border border-gray-300 dark:border-emerald-900">
           <div className="p-6 space-y-6 text-center">
             <div className="space-y-4">
               <div className="flex justify-center">
-                <div className="bg-red-500/20 p-3 rounded-full">
-                  <XCircle className="w-8 h-8 text-red-400" />
+                <div className="w-12 h-12 bg-red-500/20 p-3 rounded-full">
+                  <XCircle className="w-6 h-6 text-red-500 dark:text-red-400" />
                 </div>
               </div>
               
-              <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-teal-500 to-teal-400 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-emerald-700 to-emerald-600 bg-clip-text text-transparent">
                 Invalid Reset Link
               </h2>
               
-              <p className="text-sm text-slate-300 dark:text-slate-400">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 This password reset link is invalid or has expired.
               </p>
             </div>
 
             <Button
               onClick={handleGoToLogin}
-              className="w-full bg-gradient-to-r from-teal-600 to-teal-400 text-slate-200 px-8 py-3 text-lg flex items-center justify-center hover:opacity-90 transition-opacity rounded-lg"
+              className="w-full bg-gradient-to-r from-emerald-700 to-emerald-600 hover:from-emerald-600 hover:to-emerald-500 text-white px-8 py-3 text-lg flex items-center justify-center shadow-glow hover:shadow-soft transition-all duration-300 rounded-lg"
             >
               Back to Login
             </Button>
@@ -130,49 +112,34 @@ export default function PasswordResetPage() {
 
   if (isSuccess) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 text-white">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff22_1px,transparent_1px),linear-gradient(to_bottom,#ffffff22_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
-        </div>
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white dark:bg-black text-black dark:text-white">
+        <GridBackground></GridBackground>
 
-        <div className="absolute top-20 left-20 opacity-80">
-          <ChefHat className="w-10 h-10" />
-        </div>
-        <div className="absolute top-40 right-32 opacity-70">
-          <Sparkles className="w-8 h-8" />
-        </div>
-        <div className="absolute bottom-32 left-32 opacity-60">
-          <Star className="w-12 h-12" />
-        </div>
-        <div className="absolute bottom-20 right-20 opacity-50">
-          <Utensils className="w-6 h-6" />
-        </div>
-
-        <Card className="w-[400px] bg-slate-900/50 dark:bg-slate-950/50 backdrop-blur-xl shadow-xl rounded-lg border border-slate-700">
+        <Card className="w-[400px] bg-white/95 dark:bg-black/95 backdrop-blur-xl shadow-glow rounded-lg border border-gray-300 dark:border-emerald-900">
           <div className="p-6 space-y-6 text-center">
             <div className="space-y-4">
               <div className="flex justify-center">
-                <div className="bg-green-500/20 p-3 rounded-full">
-                  <CheckCircle className="w-8 h-8 text-green-400" />
+                <div className="w-12 h-12 bg-emerald-500/20 p-3 rounded-full">
+                  <CheckCircle className="w-6 h-6 text-emerald-500" />
                 </div>
               </div>
               
-              <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-teal-500 to-teal-400 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-emerald-700 to-emerald-600 bg-clip-text text-transparent">
                 Password Reset Successfully!
               </h2>
               
-              <p className="text-sm text-slate-300 dark:text-slate-400">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 Your password has been updated. You can now sign in with your new password.
               </p>
               
-              <p className="text-xs text-slate-400 dark:text-slate-500">
+              <p className="text-xs text-gray-600 dark:text-gray-400">
                 Redirecting you to login in 3 seconds...
               </p>
             </div>
 
             <Button
               onClick={handleGoToLogin}
-              className="w-full bg-gradient-to-r from-teal-600 to-teal-400 text-slate-200 px-8 py-3 text-lg flex items-center justify-center hover:opacity-90 transition-opacity rounded-lg"
+              className="w-full bg-gradient-to-r from-emerald-700 to-emerald-600 hover:from-emerald-600 hover:to-emerald-500 text-white px-8 py-3 text-lg flex items-center justify-center shadow-glow hover:shadow-soft transition-all duration-300 rounded-lg"
             >
               Go to Login
             </Button>
@@ -183,49 +150,34 @@ export default function PasswordResetPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 text-white">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff22_1px,transparent_1px),linear-gradient(to_bottom,#ffffff22_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
-      </div>
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white dark:bg-black text-black dark:text-white">
+      <GridBackground></GridBackground>
 
-      <div className="absolute top-20 left-20 opacity-80">
-        <ChefHat className="w-10 h-10" />
-      </div>
-      <div className="absolute top-40 right-32 opacity-70">
-        <Sparkles className="w-8 h-8" />
-      </div>
-      <div className="absolute bottom-32 left-32 opacity-60">
-        <Star className="w-12 h-12" />
-      </div>
-      <div className="absolute bottom-20 right-20 opacity-50">
-        <Utensils className="w-6 h-6" />
-      </div>
-
-      <Card className="w-[400px] bg-slate-900/50 dark:bg-slate-950/50 backdrop-blur-xl shadow-xl rounded-lg border border-slate-700">
+      <Card className="w-[400px] bg-white/95 dark:bg-black/95 backdrop-blur-xl shadow-glow rounded-lg border border-gray-300 dark:border-emerald-900">
         <div className="p-6 space-y-6">
           <div className="space-y-2 text-center">
             <div className="flex justify-center mb-4">
-              <div className="bg-primary/20 p-2 rounded-full">
-                <LockIcon className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 bg-emerald-500/20 p-2 rounded-full">
+                <LockIcon className="w-8 h-8 text-emerald-500" />
               </div>
             </div>
             
-            <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-emerald-700 to-emerald-600 bg-clip-text text-transparent">
               Reset Your Password
             </h2>
-            <p className="text-sm text-slate-300 dark:text-slate-400">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
               Enter your new password below
             </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm text-slate-300 dark:text-slate-400">
+              <Label htmlFor="password" className="text-sm text-gray-700 dark:text-gray-300">
                 New Password
               </Label>
               <div className="relative">
                 <LockIcon
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"
                   size={18}
                 />
                 <Input
@@ -238,22 +190,22 @@ export default function PasswordResetPage() {
                     }
                   })}
                   type="password"
-                  className="pl-10 bg-slate-800/50 dark:bg-slate-900/50 border border-slate-700 dark:border-slate-600 text-white py-3 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="pl-10 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-emerald-900 text-black dark:text-white py-3 rounded-lg focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                   placeholder="Enter your new password"
                 />
               </div>
               {errors.password && (
-                <p className="text-sm text-red-400">{errors.password.message}</p>
+                <p className="text-sm text-red-500 dark:text-red-400">{errors.password.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm text-slate-300 dark:text-slate-400">
+              <Label htmlFor="confirmPassword" className="text-sm text-gray-700 dark:text-gray-300">
                 Confirm New Password
               </Label>
               <div className="relative">
                 <LockIcon
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"
                   size={18}
                 />
                 <Input
@@ -262,12 +214,12 @@ export default function PasswordResetPage() {
                     required: "Please confirm your password" 
                   })}
                   type="password"
-                  className="pl-10 bg-slate-800/50 dark:bg-slate-900/50 border border-slate-700 dark:border-slate-600 text-white py-3 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="pl-10 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-emerald-900 text-black dark:text-white py-3 rounded-lg focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                   placeholder="Confirm your new password"
                 />
               </div>
               {errors.confirmPassword && (
-                <p className="text-sm text-red-400">
+                <p className="text-sm text-red-500 dark:text-red-400">
                   {errors.confirmPassword.message}
                 </p>
               )}
@@ -276,7 +228,7 @@ export default function PasswordResetPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-teal-600 to-teal-400 text-slate-200 px-8 py-3 text-lg flex items-center justify-center hover:opacity-90 transition-opacity rounded-lg"
+              className="w-full bg-gradient-to-r from-emerald-700 to-emerald-600 hover:from-emerald-600 hover:to-emerald-500 text-white px-8 py-3 text-lg flex items-center justify-center shadow-glow hover:shadow-soft transition-all duration-300 rounded-lg"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
@@ -289,7 +241,7 @@ export default function PasswordResetPage() {
             </Button>
 
             {errors.root && (
-              <p className="text-sm text-red-400 text-center">
+              <p className="text-sm text-red-500 dark:text-red-400 text-center">
                 {errors.root.message}
               </p>
             )}
@@ -297,7 +249,7 @@ export default function PasswordResetPage() {
 
           <Button
             variant="link"
-            className="w-full text-slate-400 dark:text-slate-500 hover:text-primary transition-colors"
+            className="w-full text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
             onClick={handleGoToLogin}
             disabled={isLoading}
           >
