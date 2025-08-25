@@ -2,6 +2,7 @@
 import { ShoppingCart, Menu, X } from "lucide-react"
 import { ThemeToggle } from "./toggle"
 import { useState } from "react"
+import Link from "next/link";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -21,7 +22,9 @@ export function Navbar() {
           <div className="flex items-center space-x-2">
             <ThemeToggle />
             <button className="hidden sm:flex px-4 py-2 bg-[#15825d] dark:bg-[#34d399] text-white dark:text-black rounded-md font-medium hover:bg-[#116d4c] dark:hover:bg-[#2fc28d] transition">
-              Login
+              <Link href="/auth">
+                  Login
+                  </Link>
             </button>
             <button
               className="md:hidden p-2"
@@ -40,7 +43,9 @@ export function Navbar() {
             <div className="flex flex-col items-center space-y-4">
               <div className="flex space-x-2 pt-2">
                 <button className="px-3 py-2 bg-[#15825d] dark:bg-[#34d399] text-white dark:text-black rounded-md">
+                  <Link href="/auth">
                   Login
+                  </Link>
                 </button>
               </div>
             </div>

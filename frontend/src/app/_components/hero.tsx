@@ -25,7 +25,7 @@ export function HeroSection() {
             >
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
                 Fresh Groceries
-                <span className="block bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-emerald-700 to-emerald-600 bg-clip-text text-transparent">
                   Delivered Daily
                 </span>
               </h1>
@@ -41,7 +41,7 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="flex flex-wrap gap-4 justify-center lg:justify-start"
             >
-              <Button size="lg" className="shadow-glow group">
+              <Button size="lg" className="shadow-glow group bg-gray-800">
                 Start Shopping
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
@@ -72,8 +72,8 @@ export function HeroSection() {
                     <feature.icon className="h-5 w-5 text-gray-300 group-hover:text-white" />
                   </div>
                   <div>
-                    <p className="font-semibold text-sm text-white">{feature.title}</p>
-                    <p className="text-xs text-gray-400">{feature.subtitle}</p>
+                    <p className="font-semibold text-sm text-black dark:text-gray-400">{feature.title}</p>
+                    <p className="text-xs text-black dark:text-gray-400">{feature.subtitle}</p>
                   </div>
                 </motion.div>
               ))}
