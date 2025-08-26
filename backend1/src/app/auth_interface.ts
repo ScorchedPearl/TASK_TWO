@@ -6,17 +6,21 @@ export interface GoogleTokenResult {
  picture:string;
  id:string
 }
+
 export interface JWTPayload extends JWTUser{
  [key: string]: any; 
 }
+
 export interface JWTUser{
  id: string;
  email: string;
  expiresAt: Date;
  name:string;
+ role: 'buyer' | 'seller';
  issuedAt: Date;
  tokenId: string;
 }
+
 export interface GraphqlContext{
  user?: JWTUser
 }
@@ -25,6 +29,7 @@ export interface User{
  name: string;
  email: string;
  id: string;
+ role: 'buyer' | 'seller';
  profileImage?: string | undefined;
 }
 
@@ -34,7 +39,6 @@ export interface TokenPair {
   expiresIn: number;
   tokenType: 'Bearer';
 }
-
 
 export enum JWTErrorType {
   INVALID_TOKEN = 'INVALID_TOKEN',

@@ -1,5 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export type UserRole = 'buyer' | 'seller';
+
 export interface IUser extends Document {
   _id: string;
   email: string;
@@ -9,6 +11,7 @@ export interface IUser extends Document {
   isEmailVerified: boolean;
   provider: 'credentials' | 'google';
   googleId?: string;
+  role: UserRole;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -53,11 +56,16 @@ const userSchema = new Schema<IUser>({
     type: String,
     sparse: true, 
     default: null
+  },
+  role: {
+    type: String,
+    enum: ['buyer', 'seller'],
+    required: true,
+    default: 'buyer'
   }
 }, {
   timestamps: true
 });
-
 
 userSchema.methods.toJSON = function() {
   const user = this.toObject();
