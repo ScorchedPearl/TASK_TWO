@@ -1,3 +1,4 @@
+"use client";
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,7 +15,7 @@ import { useForm } from "react-hook-form";
 import { useSearchParams } from 'next/navigation';
 import { GridBackground } from "../_components/bg";
 
-export default function PasswordResetPage() {
+export default function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter();
@@ -53,6 +54,14 @@ export default function PasswordResetPage() {
       return;
     }
 
+    if (data.password.length < 6) {
+      setError('password', {
+        type: 'manual',
+        message: 'Password must be at least 6 characters long'
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -78,7 +87,7 @@ export default function PasswordResetPage() {
   if (!token) {
     return (
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white dark:bg-black text-black dark:text-white">
-        <GridBackground></GridBackground>
+        <GridBackground />
 
         <Card className="w-[400px] bg-white/95 dark:bg-black/95 backdrop-blur-xl shadow-glow rounded-lg border border-gray-300 dark:border-emerald-900">
           <div className="p-6 space-y-6 text-center">
@@ -94,7 +103,7 @@ export default function PasswordResetPage() {
               </h2>
               
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                This password reset link is invalid or has expired.
+                This password reset link is invalid or has expired. Please request a new password reset.
               </p>
             </div>
 
@@ -113,7 +122,7 @@ export default function PasswordResetPage() {
   if (isSuccess) {
     return (
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white dark:bg-black text-black dark:text-white">
-        <GridBackground></GridBackground>
+        <GridBackground />
 
         <Card className="w-[400px] bg-white/95 dark:bg-black/95 backdrop-blur-xl shadow-glow rounded-lg border border-gray-300 dark:border-emerald-900">
           <div className="p-6 space-y-6 text-center">
@@ -129,7 +138,7 @@ export default function PasswordResetPage() {
               </h2>
               
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                Your password has been updated. You can now sign in with your new password.
+                Your password has been updated successfully. You can now sign in with your new password.
               </p>
               
               <p className="text-xs text-gray-600 dark:text-gray-400">
@@ -141,7 +150,7 @@ export default function PasswordResetPage() {
               onClick={handleGoToLogin}
               className="w-full bg-gradient-to-r from-emerald-700 to-emerald-600 hover:from-emerald-600 hover:to-emerald-500 text-white px-8 py-3 text-lg flex items-center justify-center shadow-glow hover:shadow-soft transition-all duration-300 rounded-lg"
             >
-              Go to Login
+              Go to Login Now
             </Button>
           </div>
         </Card>
@@ -151,7 +160,7 @@ export default function PasswordResetPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white dark:bg-black text-black dark:text-white">
-      <GridBackground></GridBackground>
+      <GridBackground />
 
       <Card className="w-[400px] bg-white/95 dark:bg-black/95 backdrop-blur-xl shadow-glow rounded-lg border border-gray-300 dark:border-emerald-900">
         <div className="p-6 space-y-6">
@@ -166,7 +175,7 @@ export default function PasswordResetPage() {
               Reset Your Password
             </h2>
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              Enter your new password below
+              Enter your new password below to complete the reset process.
             </p>
           </div>
 
@@ -233,7 +242,7 @@ export default function PasswordResetPage() {
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                  Resetting...
+                  Resetting Password...
                 </div>
               ) : (
                 "Reset Password"
@@ -247,14 +256,16 @@ export default function PasswordResetPage() {
             )}
           </form>
 
-          <Button
-            variant="link"
-            className="w-full text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-            onClick={handleGoToLogin}
-            disabled={isLoading}
-          >
-            Back to Login
-          </Button>
+          <div className="text-center">
+            <Button
+              variant="link"
+              className="text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+              onClick={handleGoToLogin}
+              disabled={isLoading}
+            >
+              Back to Login
+            </Button>
+          </div>
         </div>
       </Card>
     </div>

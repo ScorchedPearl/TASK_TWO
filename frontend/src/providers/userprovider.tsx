@@ -39,7 +39,7 @@ const UserContext = createContext<UserContextType>({
   isLoading: true,
   googleAccessToken: null,
   googleAuth: () => Promise.resolve(""),
-  completeGoogleRegistration: async () => Promise.resolve(), // 🆕 New
+  completeGoogleRegistration: async () => Promise.resolve(),
   sendOTP: () => Promise.resolve(false),
   changePassword: async () => Promise.resolve(),
   signUp: async () => Promise.resolve(),
@@ -60,7 +60,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, isLoading } = useCurrentUser();
   const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(null);
 
-  const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
   const storeTokens = (tokens: TokenPair) => {
     localStorage.setItem('__Pearl_Token', tokens.accessToken);
@@ -69,6 +69,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   async function googleAuth(token: string, role?: 'buyer' | 'seller'): Promise<string | GoogleAuthResponse> {
     try {
+      console.log('Attempting Google auth with token:', token.substring(0, 20) + '...');
+      
       const response = await axios.post(`${BACKEND_URL}/api/auth/google`, {
         token,
         role
@@ -78,33 +80,52 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         },
       });
 
+      console.log('Google auth response:', response.data);
+
+
       if (response.data?.success && response.data?.data?.tokens) {
         const { tokens }: { tokens: TokenPair } = response.data.data;
-        console.log(tokens);
+        console.log('Authentication successful, storing tokens');
         storeTokens(tokens);
         localStorage.setItem('__Google_Access_Token__', token);
         setGoogleAccessToken(token);
         return tokens.accessToken;
-      } else {
-        throw new Error(response.data?.error || 'Authentication failed');
       }
-    } catch (error: any) {
-      console.error('Google auth error:', error);
-
-      if (error.response?.data?.code === 'ROLE_SELECTION_REQUIRED' || error.response?.data?.error === 'ROLE_SELECTION_REQUIRED') {
+      
+      if (!response.data?.success && response.data?.code === 'ROLE_SELECTION_REQUIRED') {
+        console.log('Role selection required');
         return {
           requiresRoleSelection: true,
-          googleToken: token
+          googleToken: response.data.data?.googleToken || token
         };
       }
       
-      const errorMessage = error.response?.data?.error || 'Failed to authenticate with Google';
-      throw new Error(errorMessage);
+      throw new Error(response.data?.error || 'Authentication failed');
+    } catch (error: any) {
+      console.error('Google auth error:', error);
+      
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        if (errorData.code === 'ROLE_SELECTION_REQUIRED') {
+          console.log('Role selection required (from error response)');
+          return {
+            requiresRoleSelection: true,
+            googleToken: errorData.data?.googleToken || token
+          };
+        }
+        
+        throw new Error(errorData.error || 'Failed to authenticate with Google');
+      }
+      
+      throw new Error(error.message || 'Failed to authenticate with Google');
     }
   }
 
   async function completeGoogleRegistration(token: string, role: 'buyer' | 'seller') {
     try {
+      console.log('Completing Google registration with role:', role);
+      
       const response = await axios.post(`${BACKEND_URL}/api/auth/google/complete-registration`, {
         token,
         role
@@ -114,9 +135,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         },
       });
 
+      console.log('Complete registration response:', response.data);
+
       if (response.data?.success && response.data?.data?.tokens) {
         const { tokens }: { tokens: TokenPair } = response.data.data;
-        console.log(tokens);
+        console.log('Registration completion successful, storing tokens');
         storeTokens(tokens);
         localStorage.setItem('__Google_Access_Token__', token);
         setGoogleAccessToken(token);

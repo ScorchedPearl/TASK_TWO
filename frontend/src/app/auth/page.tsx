@@ -130,25 +130,30 @@ export default function Auth() {
 
   const googlelogin = useGoogleLogin({
     onSuccess: async (cred: any) => {
+      console.log('Google login success, credential:', cred);
       setIsLoading(true);
       try {
         const result = await googleAuth(cred.access_token);
-
+        console.log('GoogleAuth result:', result);
         if (typeof result === 'object' && result.requiresRoleSelection) {
+          console.log('Role selection required, showing modal');
           setGoogleToken(result.googleToken || cred.access_token);
           setShowGoogleRoleModal(true);
+        } else {
+          console.log('Google authentication successful');
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Google login failed:", error);
         setError("root", {
           type: "manual",
-          message: "Google authentication failed. Please try again."
+          message: error.message || "Google authentication failed. Please try again."
         });
       } finally {
         setIsLoading(false);
       }
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Google login error:', error);
       setError("root", {
         type: "manual",
         message: "Google authentication failed. Please try again."
@@ -156,10 +161,13 @@ export default function Auth() {
     },
     scope: "openid profile email"
   });
+
   const handleGoogleRoleSelection = async (role: 'buyer' | 'seller') => {
+    console.log('Completing Google registration with role:', role);
     setIsLoading(true);
     try {
       await completeGoogleRegistration(googleToken, role);
+      console.log('Google registration completed successfully');
       setShowGoogleRoleModal(false);
     } catch (error: any) {
       console.error("Google role selection failed:", error);
@@ -198,6 +206,9 @@ export default function Auth() {
     setIsForgotPassword(false);
     setIsSignUp(false);
     setSelectedRole('buyer');
+    setShowGoogleRoleModal(false);
+    setGoogleToken("");
+    setGoogleRoleSelection('buyer');
     reset();
     clearErrors();
   };
@@ -226,7 +237,10 @@ export default function Auth() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => setShowGoogleRoleModal(false)}
+                    onClick={() => {
+                      setShowGoogleRoleModal(false);
+                      setGoogleToken("");
+                    }}
                     className="h-8 w-8 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                   >
                     <X className="h-4 w-4" />
@@ -285,6 +299,12 @@ export default function Auth() {
                     `Create ${googleRoleSelection === 'buyer' ? 'Buyer' : 'Seller'} Account`
                   )}
                 </Button>
+
+                {errors.root && (
+                  <p className="text-sm text-red-500 dark:text-red-400 text-center">
+                    {errors.root.message}
+                  </p>
+                )}
               </div>
             </Card>
           </motion.div>
@@ -405,7 +425,9 @@ export default function Auth() {
                       <path fill="currentColor" className="text-emerald-600 dark:text-emerald-500" d="M3.4 6.7C2.5 8.4 2 10.2 2 12c0 1.8.5 3.6 1.4 5.3l3.4-2.6c-.4-1.1-.6-2.2-.6-2.7 0-.6.2-1.6.6-2.7L3.4 6.7z" />
                       <path fill="currentColor" className="text-gray-800 dark:text-white" d="M12 4.8c1.7 0 3.2.6 4.4 1.7L19.5 4C17.5 2.2 14.9 1 12 1 8.4 1 5.1 3.2 3.4 6.7l3.4 2.6C7 6.8 9.3 4.8 12 4.8z" />
                     </svg>
-                    <span className="font-medium">Continue with Google</span>
+                    <span className="font-medium">
+                      {isLoading ? 'Authenticating...' : 'Continue with Google'}
+                    </span>
                   </Button>
                 </motion.div>
               )}
@@ -595,6 +617,7 @@ export default function Auth() {
                   setIsForgotPassword(false);
                   setIsSignUp(!isSignUp);
                   setSelectedRole('buyer');
+                  clearErrors();
                 }}
               >
                 {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
@@ -604,7 +627,10 @@ export default function Auth() {
                 <Button
                   variant="link"
                   className="w-full text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-                  onClick={() => setIsForgotPassword(!isForgotPassword)}
+                  onClick={() => {
+                    setIsForgotPassword(!isForgotPassword);
+                    clearErrors();
+                  }}
                 >
                   {isForgotPassword ? "Back to sign in" : "Forgot your password?"}
                 </Button>
@@ -613,7 +639,6 @@ export default function Auth() {
           </div>
         </Card>
       </div>
-
 
       <GoogleRoleModal />
     </>
