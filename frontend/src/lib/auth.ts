@@ -2,12 +2,13 @@ import type { User } from "../types/auth_interface";
 import axios from "axios";
 
 export const currentUserFetcher = async (): Promise<User | null> => {
+  const backendUrl= process.env.BACKEND_URL || 'http://localhost:8000';
   try {
     const rawToken = localStorage.getItem('__Pearl_Token');
     if (!rawToken) return null;
 
     const token = `Bearer ${rawToken}`;
-    const response = await axios.get(`${process.env.BACKEND_URL}/api/auth/me`, {
+    const response = await axios.get(`${backendUrl}/api/auth/me`, {
       headers: {
         Authorization: token,
       },
@@ -15,11 +16,12 @@ export const currentUserFetcher = async (): Promise<User | null> => {
 
     if (response.status === 200) {
       console.log("User data fetched successfully:", response);
-      const { name, email,profileImage } = response.data.data.user;
+      const { name, email, role, profileImage } = response.data.data.user;
 
       return {
         name,
         email,
+        role: role || 'buyer',
         profileImage: profileImage || '', 
       };
     }
@@ -29,9 +31,3 @@ export const currentUserFetcher = async (): Promise<User | null> => {
     return null;
   }
 };
-
-
-
-
-
-

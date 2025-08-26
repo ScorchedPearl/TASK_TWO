@@ -11,6 +11,7 @@ interface TokenPair {
   expiresIn: number;
   tokenType: 'Bearer';
 }
+
 interface UserContextType {
   currentUser: User | null;
   isLoading: boolean;
@@ -18,7 +19,7 @@ interface UserContextType {
   googleAuth: (token: string) => Promise<string>;
   sendOTP: (email: string) => Promise<boolean>;
   changePassword: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string, role: 'buyer' | 'seller') => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   verifyEmail: (token: string) => Promise<void>;
   resendVerification: (email: string) => Promise<void>;
@@ -54,7 +55,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
 
- 
   const storeTokens = (tokens: TokenPair) => {
     localStorage.setItem('__Pearl_Token', tokens.accessToken);
     localStorage.setItem('__Pearl_Refresh_Token', tokens.refreshToken);
@@ -87,12 +87,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  async function signUp(email: string, password: string, name: string) {
+  async function signUp(email: string, password: string, name: string, role: 'buyer' | 'seller') {
     try {
       const response = await axios.post(`${BACKEND_URL}/api/auth/register`, {
         name,
         email,
-        password
+        password,
+        role
       }, {
         headers: {
           'Content-Type': 'application/json',
@@ -246,7 +247,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       throw new Error(errorMessage);
     }
   }
-
 
   async function sendOTP(email: string): Promise<boolean> {
     try {

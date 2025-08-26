@@ -9,7 +9,9 @@ import {
   ShoppingBag,
   UserIcon,
   LockIcon,
-  MailIcon
+  MailIcon,
+  Users,
+  Store
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -25,6 +27,7 @@ export default function Auth() {
   const [showEmailSent, setShowEmailSent] = useState(false);
   const [emailSentFor, setEmailSentFor] = useState<'registration' | 'reset' | null>(null);
   const [userEmail, setUserEmail] = useState("");
+  const [selectedRole, setSelectedRole] = useState<'buyer' | 'seller'>('buyer');
   const router = useRouter();
   const navigate = router.push;
 
@@ -81,7 +84,7 @@ export default function Auth() {
           return;
         }
 
-        await signUp(email, password, name);
+        await signUp(email, password, name, selectedRole);
         setUserEmail(email);
         setEmailSentFor('registration');
         setShowEmailSent(true);
@@ -166,6 +169,7 @@ export default function Auth() {
     setUserEmail("");
     setIsForgotPassword(false);
     setIsSignUp(false);
+    setSelectedRole('buyer');
     reset();
     clearErrors();
   };
@@ -314,6 +318,56 @@ export default function Auth() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Role Selection for Sign Up */}
+            <AnimatePresence mode="wait">
+              {isSignUp && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="space-y-3"
+                >
+                  <Label className="text-sm text-gray-700 dark:text-gray-300">
+                    Account Type
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      type="button"
+                      variant={selectedRole === 'buyer' ? 'default' : 'outline'}
+                      className={`flex items-center justify-center gap-2 py-3 ${
+                        selectedRole === 'buyer' 
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
+                          : 'bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-emerald-900 hover:bg-gray-200 dark:hover:bg-gray-800 text-black dark:text-white'
+                      }`}
+                      onClick={() => setSelectedRole('buyer')}
+                    >
+                      <Users className="w-4 h-4" />
+                      Buyer
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={selectedRole === 'seller' ? 'default' : 'outline'}
+                      className={`flex items-center justify-center gap-2 py-3 ${
+                        selectedRole === 'seller' 
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
+                          : 'bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-emerald-900 hover:bg-gray-200 dark:hover:bg-gray-800 text-black dark:text-white'
+                      }`}
+                      onClick={() => setSelectedRole('seller')}
+                    >
+                      <Store className="w-4 h-4" />
+                      Seller
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    {selectedRole === 'buyer' 
+                      ? 'Shop fresh products from local sellers' 
+                      : 'Sell your products to local buyers'
+                    }
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <AnimatePresence mode="wait">
               {isSignUp && (
                 <motion.div
@@ -442,7 +496,7 @@ export default function Auth() {
                   {isForgotPassword
                     ? "Send Reset Link"
                     : isSignUp
-                    ? "Create Account" 
+                    ? `Create ${selectedRole === 'buyer' ? 'Buyer' : 'Seller'} Account` 
                     : "Sign In"}
                 </>
               )}
@@ -462,6 +516,7 @@ export default function Auth() {
               onClick={() => {
                 setIsForgotPassword(false);
                 setIsSignUp(!isSignUp);
+                setSelectedRole('buyer'); // Reset role when switching
               }}
             >
               {isSignUp
