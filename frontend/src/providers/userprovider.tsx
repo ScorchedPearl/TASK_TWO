@@ -12,11 +12,17 @@ interface TokenPair {
   tokenType: 'Bearer';
 }
 
+interface GoogleAuthResponse {
+  requiresRoleSelection?: boolean;
+  googleToken?: string;
+}
+
 interface UserContextType {
   currentUser: User | null;
   isLoading: boolean;
   googleAccessToken: string | null;
-  googleAuth: (token: string) => Promise<string>;
+  googleAuth: (token: string, role?: 'buyer' | 'seller') => Promise<string | GoogleAuthResponse>; 
+  completeGoogleRegistration: (token: string, role: 'buyer' | 'seller') => Promise<void>;
   sendOTP: (email: string) => Promise<boolean>;
   changePassword: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string, role: 'buyer' | 'seller') => Promise<void>;
@@ -33,6 +39,7 @@ const UserContext = createContext<UserContextType>({
   isLoading: true,
   googleAccessToken: null,
   googleAuth: () => Promise.resolve(""),
+  completeGoogleRegistration: async () => Promise.resolve(), // 🆕 New
   sendOTP: () => Promise.resolve(false),
   changePassword: async () => Promise.resolve(),
   signUp: async () => Promise.resolve(),
@@ -60,10 +67,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem('__Pearl_Refresh_Token', tokens.refreshToken);
   };
 
-  async function googleAuth(token: string) {
+  async function googleAuth(token: string, role?: 'buyer' | 'seller'): Promise<string | GoogleAuthResponse> {
     try {
       const response = await axios.post(`${BACKEND_URL}/api/auth/google`, {
-        token
+        token,
+        role
       }, {
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +90,42 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (error: any) {
       console.error('Google auth error:', error);
+
+      if (error.response?.data?.code === 'ROLE_SELECTION_REQUIRED' || error.response?.data?.error === 'ROLE_SELECTION_REQUIRED') {
+        return {
+          requiresRoleSelection: true,
+          googleToken: token
+        };
+      }
+      
       const errorMessage = error.response?.data?.error || 'Failed to authenticate with Google';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async function completeGoogleRegistration(token: string, role: 'buyer' | 'seller') {
+    try {
+      const response = await axios.post(`${BACKEND_URL}/api/auth/google/complete-registration`, {
+        token,
+        role
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.data?.success && response.data?.data?.tokens) {
+        const { tokens }: { tokens: TokenPair } = response.data.data;
+        console.log(tokens);
+        storeTokens(tokens);
+        localStorage.setItem('__Google_Access_Token__', token);
+        setGoogleAccessToken(token);
+      } else {
+        throw new Error(response.data?.error || 'Registration completion failed');
+      }
+    } catch (error: any) {
+      console.error('Complete Google registration error:', error);
+      const errorMessage = error.response?.data?.error || 'Failed to complete Google registration';
       throw new Error(errorMessage);
     }
   }
@@ -273,6 +316,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         isLoading,
         googleAccessToken,
         googleAuth,
+        completeGoogleRegistration, 
         sendOTP,
         changePassword,
         signUp,
