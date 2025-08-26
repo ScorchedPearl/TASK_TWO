@@ -36,7 +36,7 @@ class AuthService {
 
   public async registerWithCredentials(payload: CreateCredentialsTokenType): Promise<{ message: string; email: string }> {
     try {
-      const { email, password, name } = payload;
+      const { email, password, name, role } = payload;
       const existingUser = await User.findOne({ email: email.toLowerCase() });
       if (existingUser) {
         throw new JWTError(
@@ -45,11 +45,22 @@ class AuthService {
           409
         );
       }
+
+      // Validate role
+      if (role !== 'buyer' && role !== 'seller') {
+        throw new JWTError(
+          JWTErrorType.INVALID_TOKEN,
+          'Invalid role. Must be either buyer or seller',
+          400
+        );
+      }
+
       const hashedPassword = await this.hashPassword(password.toString());
       const pendingUserData = {
         email: email.toLowerCase(),
         name: name.toString(),
         password: hashedPassword,
+        role: role,
         createdAt: new Date().toISOString()
       };
       const pendingKey = `${this.PENDING_USER_PREFIX}${email.toLowerCase()}`;
@@ -76,7 +87,6 @@ class AuthService {
 
   public async verifyEmailAndCompleteRegistration(token: string): Promise<AuthResult> {
     try {
-   
       const verificationResult = await this.emailService.verifyEmailToken(token);
       if (!verificationResult) {
         throw new JWTError(
@@ -88,12 +98,12 @@ class AuthService {
 
       const { email } = verificationResult;
 
-
       const pendingKey = `${this.PENDING_USER_PREFIX}${email}`;
       const pendingUserData = await this.redisService.getJson<{
         email: string;
         name: string;
         password: string;
+        role: 'buyer' | 'seller';
         createdAt: string;
       }>(pendingKey);
 
@@ -104,10 +114,12 @@ class AuthService {
           400
         );
       }
+
       const newUser = new User({
         email: pendingUserData.email,
         name: pendingUserData.name,
         password: pendingUserData.password,
+        role: pendingUserData.role,
         provider: 'credentials',
         isEmailVerified: true
       });
@@ -120,6 +132,7 @@ class AuthService {
         id: savedUser._id.toString(),
         email: savedUser.email,
         name: savedUser.name,
+        role: savedUser.role,
         profileImage: savedUser.profileImage
       };
 
@@ -146,6 +159,7 @@ class AuthService {
         email: string;
         name: string;
         password: string;
+        role: 'buyer' | 'seller';
         createdAt: string;
       }>(pendingKey);
 
@@ -212,6 +226,7 @@ class AuthService {
         id: user._id.toString(),
         email: user.email,
         name: user.name,
+        role: user.role,
         profileImage: user.profileImage
       };
 
@@ -253,11 +268,14 @@ class AuthService {
           await user.save();
         }
       } else {
+        // For new Google users, default role is 'buyer'
+        // In a real app, you might want to redirect to a role selection page
         user = new User({
           email: googleUser.email,
           name: googleUser.name || googleUser.given_name,
           provider: 'google',
           googleId: googleUser.id,
+          role: 'buyer', // Default role for Google sign-in
           isEmailVerified: googleUser.email_verified === 'true',
           profileImage: googleUser.picture
         });
@@ -268,6 +286,7 @@ class AuthService {
         id: user._id.toString(),
         email: user.email,
         name: user.name,
+        role: user.role,
         profileImage: user.profileImage
       };
 
@@ -314,6 +333,7 @@ class AuthService {
         id: user._id.toString(),
         email: user.email,
         name: user.name,
+        role: user.role,
         profileImage: user.profileImage
       };
     } catch (error) {
@@ -368,7 +388,6 @@ class AuthService {
       });
 
       if (!user) {
-        // Don't reveal if user exists for security
         throw new JWTError(
           JWTErrorType.INVALID_TOKEN,
           'If this email exists, you will receive a reset link',
@@ -386,7 +405,6 @@ class AuthService {
       const redisKey = `${this.RESET_TOKEN_PREFIX}${resetToken}`;
       await this.redisService.setJson(redisKey, tokenData, this.RESET_TOKEN_EXPIRY);
 
-      // Send password reset email
       await this.emailService.sendPasswordResetEmail(user.email, user.name, resetToken);
 
       return resetToken;

@@ -5,6 +5,7 @@ import { JWTErrorType as ErrorType } from "../auth_interface";
 import { JWTError as JWTErrorClass } from "../errors/jwterror";
 import * as dotenv from "dotenv";
 dotenv.config();
+
 class TokenService {
   private static instance: TokenService;
   private readonly jwtService: JWTService;
@@ -36,6 +37,7 @@ class TokenService {
        id: user.id,
        email: user.email,
        name: user.name,
+       role: user.role,
        tokenType: 'access',
        jti: tokenId,
        expiresAt: new Date(Date.now() + this.parseExpiryToSeconds(this.config.accessTokenExpiry) * 1000),
@@ -47,6 +49,7 @@ class TokenService {
        id: user.id,
        email: user.email,
        name: user.name,
+       role: user.role,
        tokenType: 'refresh',
        jti: `${tokenId}_refresh`,
        expiresAt: new Date(Date.now() + this.parseExpiryToSeconds(this.config.refreshTokenExpiry) * 1000),
@@ -84,6 +87,7 @@ class TokenService {
     const decoded = await this.jwtService.decode(token);
     return decoded;
   }
+
   public async refreshAccessToken(refreshToken: string): Promise<TokenPair> {
     const decoded = await this.jwtService.decode(refreshToken);
     
@@ -93,20 +97,24 @@ class TokenService {
         'Invalid refresh token'
       );
     }
+
     const user: User = {
       id: decoded.id,
       email: decoded.email,
-      name: decoded.name
+      name: decoded.name,
+      role: decoded.role
     };
 
     return await this.generateTokenPair(user);
   }
+
   public extractTokenFromHeader(authHeader: string | undefined): string | null {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null;
     }
     return authHeader.substring(7);
   }
+
   public isTokenExpiringSoon(user: JWTUser): boolean {
     const fiveMinutesFromNow = new Date(Date.now() + 5 * 60 * 1000);
     return user.expiresAt <= fiveMinutesFromNow;

@@ -5,6 +5,7 @@ import type { JWTUser, JWTPayload } from "../auth_interface";
 import { JWTErrorType as ErrorType } from "../auth_interface";
 import { JWTError as JWTErrorClass } from "../errors/jwterror";
 dotenv.config();
+
 class JWTService {
   private static instance: JWTService;
   private readonly encodedKey: Uint8Array;
@@ -27,7 +28,6 @@ class JWTService {
     }
     return JWTService.instance;
   }
-
 
   public async encode(payload: JWTPayload, expiry: string): Promise<string> {
     try {
@@ -61,10 +61,18 @@ class JWTService {
 
       const jwtPayload = payload as unknown as JWTPayload;
 
-      if (!jwtPayload.id || !jwtPayload.email || !jwtPayload.name) {
+      if (!jwtPayload.id || !jwtPayload.email || !jwtPayload.name || !jwtPayload.role) {
         throw new JWTErrorClass(
           ErrorType.INVALID_TOKEN,
           'glt token format, missing required fields'
+        );
+      }
+
+      // Validate role
+      if (jwtPayload.role !== 'buyer' && jwtPayload.role !== 'seller') {
+        throw new JWTErrorClass(
+          ErrorType.INVALID_TOKEN,
+          'invalid role in token'
         );
       }
 
@@ -72,6 +80,7 @@ class JWTService {
         id: jwtPayload.id,
         email: jwtPayload.email,
         name: jwtPayload.name,
+        role: jwtPayload.role,
         expiresAt: new Date((jwtPayload.exp || 0) * 1000),
         issuedAt: new Date((jwtPayload.iat || 0) * 1000),
         tokenId: jwtPayload.jti || 'unknown'
@@ -103,5 +112,6 @@ class JWTService {
       );
     }
   }
- }
- export default JWTService;
+}
+
+export default JWTService;

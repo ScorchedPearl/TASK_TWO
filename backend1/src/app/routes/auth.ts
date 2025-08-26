@@ -10,12 +10,12 @@ const authMiddleware = AuthMiddleware.getInstance();
 
 authRouter.post('/register', async (req: Request, res: Response) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name, role } = req.body;
     
-    if (!email || !password || !name) {
+    if (!email || !password || !name || !role) {
       return res.status(400).json({
         success: false,
-        error: 'Email, password, and name are required',
+        error: 'Email, password, name, and role are required',
         code: 'MISSING_FIELDS'
       });
     }
@@ -28,10 +28,19 @@ authRouter.post('/register', async (req: Request, res: Response) => {
       });
     }
 
+    if (role !== 'buyer' && role !== 'seller') {
+      return res.status(400).json({
+        success: false,
+        error: 'Role must be either "buyer" or "seller"',
+        code: 'INVALID_ROLE'
+      });
+    }
+
     const payload: CreateCredentialsTokenType = {
       email: email.trim(),
       password,
-      name: name.trim()
+      name: name.trim(),
+      role: role
     };
 
     const result = await authService.registerWithCredentials(payload);
@@ -357,7 +366,6 @@ authRouter.post('/forgot-password', async (req: Request, res: Response) => {
     }
 
     await authService.generatePasswordResetToken(email.trim());
-
 
     res.status(200).json({
       success: true,
