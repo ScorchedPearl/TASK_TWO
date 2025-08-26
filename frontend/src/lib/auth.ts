@@ -2,7 +2,7 @@ import type { User } from "../types/auth_interface";
 import axios from "axios";
 
 export const currentUserFetcher = async (): Promise<User | null> => {
-  const backendUrl= process.env.BACKEND_URL || 'http://localhost:8000';
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
   try {
     const rawToken = localStorage.getItem('__Pearl_Token');
     if (!rawToken) return null;
@@ -15,7 +15,7 @@ export const currentUserFetcher = async (): Promise<User | null> => {
     });
 
     if (response.status === 200) {
-      console.log("User data fetched successfully:", response);
+      console.log("User data fetched successfully:", response.data);
       const { name, email, role, profileImage } = response.data.data.user;
 
       return {
