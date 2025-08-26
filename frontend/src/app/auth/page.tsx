@@ -473,6 +473,7 @@ export default function Auth() {
               <Button
                 variant="link"
                 className="w-full text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                onClick={() => setIsForgotPassword(!isForgotPassword)}
               >
                 {isForgotPassword ? "Back to sign in" : "Forgot your password?"}
               </Button>

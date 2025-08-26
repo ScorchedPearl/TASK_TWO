@@ -23,8 +23,8 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="space-y-4"
             >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
-                Fresh Groceries
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black dark:text-white leading-tight">
+                Fresh Products
                 <span className="block bg-gradient-to-r from-emerald-700 to-emerald-600 bg-clip-text text-transparent">
                   Delivered Daily
                 </span>
@@ -41,7 +41,7 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="flex flex-wrap gap-4 justify-center lg:justify-start"
             >
-              <Button size="lg" className="shadow-glow group bg-gray-800">
+              <Button size="lg" className="shadow-glow group bg-gray-800 text-white  hover:bg-emerald-600 hover:shadow-soft transition-all">
                 Start Shopping
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
