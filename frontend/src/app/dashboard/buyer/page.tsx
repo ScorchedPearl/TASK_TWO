@@ -3,7 +3,6 @@ import { SpendingCard } from './_components/spendingCard';
 import { OrderCard } from './_components/orderCard';
 import { RecommendationsGrid } from './_components/recomendationCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Package, Heart, TrendingDown, Gift, CreditCard } from 'lucide-react';
 
 const BuyerDashboard = () => {
   const spendingAnalytics = [
@@ -11,7 +10,7 @@ const BuyerDashboard = () => {
   ];
 
   const recentOrders = [
-    {}.
+    {},
   ];
 
   return (
