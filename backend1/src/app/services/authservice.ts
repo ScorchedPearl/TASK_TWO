@@ -20,6 +20,8 @@ class AuthService {
   private readonly RESET_TOKEN_EXPIRY = 30 * 60; 
   private readonly PENDING_USER_PREFIX = 'pending_user:';
   private readonly PENDING_USER_EXPIRY = 24 * 60 * 60; 
+  private readonly GOOGLE_TOKEN_PREFIX = 'google_token:';
+  private readonly GOOGLE_TOKEN_EXPIRY = 10 * 60;
 
   private constructor() {
     this.tokenService = TokenService.getInstance();
@@ -46,7 +48,7 @@ class AuthService {
         );
       }
 
-      // Validate role
+
       if (role !== 'buyer' && role !== 'seller') {
         throw new JWTError(
           JWTErrorType.INVALID_TOKEN,
@@ -246,10 +248,12 @@ class AuthService {
     }
   }
 
-  public async signInWithGoogle(googleToken: string): Promise<AuthResult> {
+  
+  public async signInWithGoogle(googleToken: string): Promise<AuthResult | string> {
     try {
       const googleUser = await this.verifyGoogleToken(googleToken);
       console.log("Google user data:", googleUser);
+      
       let user = await User.findOne({
         $or: [
           { email: googleUser.email },
@@ -258,6 +262,7 @@ class AuthService {
       });
 
       if (user) {
+      
         if (!user.googleId && googleUser.id) {
           user.googleId = googleUser.id;
           user.provider = 'google';
@@ -267,32 +272,28 @@ class AuthService {
           }
           await user.save();
         }
+
+        const userType: UserType = {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          profileImage: user.profileImage
+        };
+
+        const tokens = await this.tokenService.generateTokenPair(userType);
+        return { user: userType, tokens };
       } else {
-        // For new Google users, default role is 'buyer'
-        // In a real app, you might want to redirect to a role selection page
-        user = new User({
-          email: googleUser.email,
-          name: googleUser.name || googleUser.given_name,
-          provider: 'google',
-          googleId: googleUser.id,
-          role: 'buyer', // Default role for Google sign-in
-          isEmailVerified: googleUser.email_verified === 'true',
-          profileImage: googleUser.picture
-        });
-        await user.save();
+       
+        const googleTokenKey = `${this.GOOGLE_TOKEN_PREFIX}${googleUser.email}`;
+        await this.redisService.setJson(googleTokenKey, {
+          googleUser,
+          token: googleToken,
+          createdAt: new Date().toISOString()
+        }, this.GOOGLE_TOKEN_EXPIRY);
+
+        return googleToken; 
       }
-
-      const userType: UserType = {
-        id: user._id.toString(),
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        profileImage: user.profileImage
-      };
-
-      const tokens = await this.tokenService.generateTokenPair(userType);
-
-      return { user: userType, tokens };
     } catch (error) {
       if (error instanceof JWTError) {
         throw error;
@@ -301,6 +302,95 @@ class AuthService {
       throw new JWTError(
         JWTErrorType.INVALID_TOKEN,
         'Google authentication failed',
+        500
+      );
+    }
+  }
+
+
+  public async completeGoogleRegistration(googleToken: string, role: 'buyer' | 'seller'): Promise<AuthResult> {
+    try {
+    
+      const googleUser = await this.verifyGoogleToken(googleToken);
+      const googleTokenKey = `${this.GOOGLE_TOKEN_PREFIX}${googleUser.email}`;
+      
+      const storedData = await this.redisService.getJson<{
+        googleUser: GoogleTokenResult;
+        token: string;
+        createdAt: string;
+      }>(googleTokenKey);
+
+      if (!storedData || storedData.token !== googleToken) {
+        throw new JWTError(
+          JWTErrorType.INVALID_TOKEN,
+          'Invalid or expired Google token',
+          400
+        );
+      }
+
+
+      if (role !== 'buyer' && role !== 'seller') {
+        throw new JWTError(
+          JWTErrorType.INVALID_TOKEN,
+          'Invalid role. Must be either buyer or seller',
+          400
+        );
+      }
+
+      const existingUser = await User.findOne({
+        $or: [
+          { email: googleUser.email },
+          { googleId: googleUser.id }
+        ]
+      });
+
+      if (existingUser) {
+        await this.redisService.del(googleTokenKey);
+        
+        const userType: UserType = {
+          id: existingUser._id.toString(),
+          email: existingUser.email,
+          name: existingUser.name,
+          role: existingUser.role,
+          profileImage: existingUser.profileImage
+        };
+
+        const tokens = await this.tokenService.generateTokenPair(userType);
+        return { user: userType, tokens };
+      }
+
+      const newUser = new User({
+        email: googleUser.email,
+        name: googleUser.name || googleUser.given_name,
+        provider: 'google',
+        googleId: googleUser.id,
+        role: role,
+        isEmailVerified: googleUser.email_verified === 'true',
+        profileImage: googleUser.picture
+      });
+
+      const savedUser = await newUser.save();
+
+      await this.redisService.del(googleTokenKey);
+
+      const userType: UserType = {
+        id: savedUser._id.toString(),
+        email: savedUser.email,
+        name: savedUser.name,
+        role: savedUser.role,
+        profileImage: savedUser.profileImage
+      };
+
+      const tokens = await this.tokenService.generateTokenPair(userType);
+      return { user: userType, tokens };
+    } catch (error) {
+      if (error instanceof JWTError) {
+        throw error;
+      }
+      console.error('Complete Google registration failed:', error);
+      throw new JWTError(
+        JWTErrorType.INVALID_TOKEN,
+        'Failed to complete Google registration',
         500
       );
     }
@@ -541,6 +631,27 @@ class AuthService {
       return cleanedCount;
     } catch (error) {
       console.error('Cleanup expired tokens failed:', error);
+      return 0;
+    }
+  }
+
+  public async cleanupExpiredGoogleTokens(): Promise<number> {
+    try {
+      const pattern = `${this.GOOGLE_TOKEN_PREFIX}*`;
+      const keys = await this.redisService.keys(pattern);
+      let cleanedCount = 0;
+
+      for (const key of keys) {
+        const ttl = await this.redisService.ttl(key);
+        if (ttl <= 0) {
+          await this.redisService.del(key);
+          cleanedCount++;
+        }
+      }
+
+      return cleanedCount;
+    } catch (error) {
+      console.error('Cleanup expired Google tokens failed:', error);
       return 0;
     }
   }

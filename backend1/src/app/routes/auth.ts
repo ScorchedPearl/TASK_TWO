@@ -205,6 +205,20 @@ authRouter.post('/google', async (req: Request, res: Response) => {
 
     const result = await authService.signInWithGoogle(token);
 
+    
+    if (typeof result === 'string') {
+      return res.status(200).json({
+        success: false,
+        error: 'ROLE_SELECTION_REQUIRED',
+        code: 'ROLE_SELECTION_REQUIRED',
+        data: {
+          requiresRoleSelection: true,
+          googleToken: result
+        }
+      });
+    }
+
+ 
     res.status(200).json({
       success: true,
       data: {
@@ -224,6 +238,56 @@ authRouter.post('/google', async (req: Request, res: Response) => {
     }
 
     console.error('Google auth error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      code: 'SERVER_ERROR'
+    });
+  }
+});
+
+
+authRouter.post('/google/complete-registration', async (req: Request, res: Response) => {
+  try {
+    const { token, role } = req.body;
+
+    if (!token || !role) {
+      return res.status(400).json({
+        success: false,
+        error: 'Google token and role are required',
+        code: 'MISSING_FIELDS'
+      });
+    }
+
+    if (role !== 'buyer' && role !== 'seller') {
+      return res.status(400).json({
+        success: false,
+        error: 'Role must be either "buyer" or "seller"',
+        code: 'INVALID_ROLE'
+      });
+    }
+
+    const result = await authService.completeGoogleRegistration(token, role);
+
+    res.status(201).json({
+      success: true,
+      data: {
+        user: result.user,
+        tokens: result.tokens
+      },
+      message: 'Google registration completed successfully'
+    });
+
+  } catch (error) {
+    if (error instanceof JWTError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        error: error.message,
+        code: error.type
+      });
+    }
+
+    console.error('Google registration completion error:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',

@@ -58,3 +58,8 @@ export interface PasswordResetToken {
   token: string;
   expiresAt: Date;
 }
+
+export interface GoogleAuthResult extends AuthResult {
+  isNewUser?: boolean;
+  requiresRoleSelection?: boolean;
+}
