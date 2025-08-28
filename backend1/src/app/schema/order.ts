@@ -159,7 +159,6 @@ const orderSchema = new Schema<IOrder>({
 });
 
 orderSchema.index({ buyerId: 1 });
-orderSchema.index({ orderId: 1 });
 orderSchema.index({ 'items.sellerId': 1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });

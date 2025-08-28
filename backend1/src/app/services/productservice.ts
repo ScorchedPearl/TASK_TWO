@@ -65,7 +65,7 @@ class ProductService {
         ...payload,
         sellerId,
         sellerName: seller.name,
-        sku: '', 
+        sku: "temp", 
         tags: payload.tags || []
       });
       await product.save();
