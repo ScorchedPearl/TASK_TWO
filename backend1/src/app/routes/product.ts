@@ -145,7 +145,7 @@ productRouter.post('/', authMiddleware.authenticate, async (req: Request, res: R
       },
       tags: tags || []
     };
-    
+
     const product = await productService.createProduct(userId, payload);
 
     res.status(201).json({
@@ -280,12 +280,12 @@ productRouter.post('/:id/like', authMiddleware.authenticate, async (req: Request
     });
   }
 });
-
 productRouter.get('/seller', async (req: Request, res: Response) => {
   try {
     const userId = req.user!.role ;
     console.log(userId)
     const sellerId=userId;
+
     const {
       page = 1,
       limit = 12
