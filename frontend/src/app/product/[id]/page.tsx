@@ -60,7 +60,7 @@ export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const productId = params.id as string;
-
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
   useEffect(() => {
     if (productId) {
       fetchProduct();
@@ -83,7 +83,7 @@ export default function ProductDetailPage() {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`/api/products/${productId}`, { headers });
+      const response = await fetch(`${backendUrl}/api/products/${productId}`, { headers });
       
       if (response.ok) {
         const data = await response.json();
@@ -103,7 +103,7 @@ export default function ProductDetailPage() {
     if (!product) return;
 
     try {
-      const response = await fetch(`/api/products?category=${product.category}&limit=4`);
+      const response = await fetch(`${backendUrl}/api/products?category=${product.category}&limit=4`);
       if (response.ok) {
         const data = await response.json();
         const filtered = data.data.products.filter((p: Product) => 
@@ -123,7 +123,7 @@ export default function ProductDetailPage() {
     }
 
     try {
-      const response = await fetch(`/api/products/${productId}/like`, {
+      const response = await fetch(`${backendUrl}/api/products/${productId}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('__Pearl_Token')}`
@@ -158,7 +158,7 @@ export default function ProductDetailPage() {
 
     try {
       setAddingToCart(true);
-      const response = await fetch('/api/cart/items', {
+      const response = await fetch(`${backendUrl}/api/cart/items`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('__Pearl_Token')}`,

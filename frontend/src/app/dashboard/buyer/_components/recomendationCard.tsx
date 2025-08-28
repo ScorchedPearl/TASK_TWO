@@ -4,23 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-interface Product {
-  id: string;
-  name: string;
-  image: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  reviews: number;
-  discount?: number;
-  tag?: string;
+export const RecommendationsGrid = (recommendations:{
+  products: any[]
 }
-
-const recommendations: Product[] = [
- 
-];
-
-export const RecommendationsGrid = () => {
+) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -62,7 +49,7 @@ export const RecommendationsGrid = () => {
         <div
           className="grid grid-flow-col auto-cols-[75%] gap-4 overflow-x-auto md:grid-cols-2 lg:grid-cols-4 md:auto-cols-auto md:overflow-visible snap-x snap-mandatory"
         >
-          {recommendations.map((product, index) => (
+          {recommendations.products.map((product, index) => (
             <Card
               key={product.id}
               className="group bg-white dark:bg-[#0b0d0c] border border-gray-100 dark:border-[#111827] rounded-lg shadow-sm hover:shadow-lg transition-transform duration-300 transform hover:-translate-y-1"

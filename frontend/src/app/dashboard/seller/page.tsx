@@ -9,20 +9,18 @@ import {
   Eye, 
   Edit, 
   Trash2,
-  MapPin,
   Calendar,
-  DollarSign,
-  BarChart3
+  DollarSign
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { GridBackground } from "../../_components/bg";
 import { useUser } from '@/providers/userprovider';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ProductForm from '../_Component/productCreationForm';
+
 
 interface Product {
   _id: string;
@@ -48,7 +46,7 @@ interface DashboardStats {
   totalLikes: number;
   totalRevenue: number;
 }
-
+const backendUrl=process.env.BACKEND_URL? process.env.BACKEND_URL: "http://localhost:8000"
 export default function SellerDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
@@ -75,16 +73,16 @@ export default function SellerDashboard() {
     try {
       setLoading(true);
       const token = localStorage.getItem('__Pearl_Token');
-      
-      const productsResponse = await fetch(`/api/products/seller/${currentUser?.email}`, {
+      console.log(currentUser?.id)
+      const productsResponse = await fetch(`${backendUrl}/api/products/seller`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-
       if (productsResponse.ok) {
         const productsData = await productsResponse.json();
         setProducts(productsData.data.products);
+        console.log(productsData.data.products)
         
         const totalProducts = productsData.data.products.length;
         const totalViews = productsData.data.products.reduce((sum: number, p: Product) => sum + p.views, 0);
@@ -108,7 +106,7 @@ export default function SellerDashboard() {
 
     try {
       const token = localStorage.getItem('__Pearl_Token');
-      const response = await fetch(`/api/products/${productId}`, {
+      const response = await fetch(`${backendUrl}/api/products/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -392,37 +390,16 @@ export default function SellerDashboard() {
         </motion.div>
       </div>
 
-      {/* Add Product Modal - You can implement this as a separate component */}
+  
       {showAddProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <Card className="w-[500px] max-w-[90vw] bg-white dark:bg-black border border-gray-300 dark:border-emerald-900">
-            <CardHeader>
-              <CardTitle>Add New Product</CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowAddProduct(false)}
-                className="absolute right-4 top-4"
-              >
-                ×
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center text-gray-600 dark:text-gray-400 py-8">
-                Product creation form would go here.
-                <br />
-                <Button
-                  variant="link"
-                  onClick={() => setShowAddProduct(false)}
-                  className="mt-2"
-                >
-                  Close for now
-                </Button>
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+  <ProductForm
+    onClose={() => setShowAddProduct(false)}
+    onSuccess={(newProduct: Product) => {
+      setProducts([newProduct, ...products]);
+      setShowAddProduct(false);
+    }}
+  />
+)}
     </div>
   );
 }

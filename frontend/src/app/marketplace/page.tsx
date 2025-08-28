@@ -86,11 +86,16 @@ export default function MarketplacePage() {
 
   const { currentUser } = useUser();
   const router = useRouter();
-
+  // useEffect(() => {
+  //   if (!currentUser) {
+  //     router.push('/auth');
+  //   }
+  // }
+  // ,[currentUser]);
   useEffect(() => {
     fetchProducts();
   }, [filters, page]);
-
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -105,7 +110,7 @@ export default function MarketplacePage() {
       params.append('page', page.toString());
       params.append('limit', '12');
 
-      const response = await fetch(`/api/products?${params.toString()}`);
+      const response = await fetch(`${backendUrl}/api/products?${params.toString()}`);
       const data = await response.json();
 
       if (data.success) {
@@ -144,7 +149,7 @@ export default function MarketplacePage() {
     }
 
     try {
-      const response = await fetch(`/api/products/${productId}/like`, {
+      const response = await fetch(`${backendUrl}/api/products/${productId}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('__Pearl_Token')}`,
