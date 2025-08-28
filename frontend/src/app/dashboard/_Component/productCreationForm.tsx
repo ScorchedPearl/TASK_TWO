@@ -28,7 +28,7 @@ interface ProductFormProps {
   onClose: () => void;
   onSuccess: (product: any) => void;
 }
-
+const BackendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 const categories = [
   { value: 'electronics', label: 'Electronics' },
   { value: 'clothing', label: 'Clothing' },
@@ -113,7 +113,7 @@ export default function ProductForm({ onClose, onSuccess }: ProductFormProps) {
         }
       };
 
-      const response = await fetch('/api/products', {
+      const response = await fetch(`${BackendUrl}/api/products`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

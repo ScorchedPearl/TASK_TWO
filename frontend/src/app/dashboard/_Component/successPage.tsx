@@ -41,7 +41,7 @@ interface Order {
   };
   createdAt: string;
 }
-
+const backendUrl=process.env.BACKEND_URL? process.env.BACKEND_URL:"http://lcoalhost:8000";
 export default function CheckoutSuccessPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,7 +64,7 @@ export default function CheckoutSuccessPage() {
       setLoading(true);
       const token = localStorage.getItem('__Pearl_Token');
       
-      const response = await fetch(`/api/orders/${orderId}`, {
+      const response = await fetch(`${backendUrl}/api/orders/${orderId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
