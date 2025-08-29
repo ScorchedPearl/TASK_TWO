@@ -9,6 +9,7 @@ import { GridBackground } from "../_components/bg";
 import { useUser } from '@/providers/userprovider';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { BuyerHeader } from '../dashboard/buyer/_components/header';
 
 interface Product {
   _id: string;
@@ -267,6 +268,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000
     <div className="relative min-h-screen bg-white dark:bg-black text-black dark:text-white">
       <GridBackground />
       
+      <BuyerHeader></BuyerHeader>
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>

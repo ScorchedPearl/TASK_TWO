@@ -44,7 +44,7 @@ interface ShippingAddress {
   zipCode: string;
   phone: string;
 }
-
+const backendUrl=process.env.BACKEND_URL||"http://localhost:8000";
 export default function CartPage() {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,9 +67,7 @@ export default function CartPage() {
     if (!isLoading) {
       if (!currentUser) {
         router.push('/auth');
-      } else if (currentUser.role !== 'buyer') {
-        router.push('/dashboard/seller');
-      } else {
+      }  else {
         fetchCart();
         setShippingAddress(prev => ({
           ...prev,
@@ -84,7 +82,7 @@ export default function CartPage() {
       setLoading(true);
       const token = localStorage.getItem('__Pearl_Token');
       
-      const response = await fetch('/api/cart', {
+      const response = await fetch(`${backendUrl}/api/cart`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -108,7 +106,7 @@ export default function CartPage() {
       setUpdating(productId);
       const token = localStorage.getItem('__Pearl_Token');
       
-      const response = await fetch(`/api/cart/items/${productId}`, {
+      const response = await fetch(`${backendUrl}/api/cart/items/${productId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -133,7 +131,7 @@ export default function CartPage() {
       setUpdating(productId);
       const token = localStorage.getItem('__Pearl_Token');
       
-      const response = await fetch(`/api/cart/items/${productId}`, {
+      const response = await fetch(`${backendUrl}/api/cart/items/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -158,7 +156,7 @@ export default function CartPage() {
       setLoading(true);
       const token = localStorage.getItem('__Pearl_Token');
       
-      const response = await fetch('/api/cart', {
+      const response = await fetch(`${backendUrl}/api/cart`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -192,7 +190,7 @@ export default function CartPage() {
       const token = localStorage.getItem('__Pearl_Token');
       const idempotencyKey = `checkout_${Date.now()}_${Math.random().toString(36)}`;
       
-      const response = await fetch('/api/orders/checkout', {
+      const response = await fetch(`${backendUrl}/api/orders/checkout`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

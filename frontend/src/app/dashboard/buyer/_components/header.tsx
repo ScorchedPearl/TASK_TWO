@@ -1,6 +1,6 @@
 "use client";
 
-import {  Heart, ShoppingCart, Bell, ChevronDown } from 'lucide-react';
+import {  Heart, ShoppingCart, ChevronDown ,ShoppingBag} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { 
@@ -32,16 +32,22 @@ export const BuyerHeader = () => {
         </div>
         <div className="flex items-center gap-2">
            <ThemeToggle />
-          <Button variant="ghost" size="icon" className="relative text-[#0a0e1a] dark:text-white">
+          <Button variant="ghost" size="icon" className="relative text-[#0a0e1a] dark:text-white"onClick={()=>
+              redirect('/wishlist')
+            }>
             <Heart className="h-5 w-5" />
           </Button>
           
           <Button variant="ghost" size="icon" className="relative text-[#0a0e1a] dark:text-white" onClick={()=>
-              redirect('/marketplace')
+              redirect('/cart')
             }>
             <ShoppingCart className="h-5 w-5" />
           </Button>
-          
+          <Button variant="ghost" size="icon" className="relative text-[#0a0e1a] dark:text-white" onClick={()=>
+              redirect('/marketplace')
+            }>
+            <ShoppingBag className="h-5 w-5" />
+          </Button>
         
   
           <DropdownMenu>
