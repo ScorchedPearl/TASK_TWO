@@ -36,6 +36,16 @@ class AuthService {
     return AuthService.instance;
   }
 
+  private convertUserToType(user: any): UserType {
+    return {
+      id: user._id?.toString() || user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      profileImage: user.profileImage
+    };
+  }
+
   public async registerWithCredentials(payload: CreateCredentialsTokenType): Promise<{ message: string; email: string }> {
     try {
       const { email, password, name, role } = payload;
@@ -47,7 +57,6 @@ class AuthService {
           409
         );
       }
-
 
       if (role !== 'buyer' && role !== 'seller') {
         throw new JWTError(
@@ -65,6 +74,7 @@ class AuthService {
         role: role,
         createdAt: new Date().toISOString()
       };
+      
       const pendingKey = `${this.PENDING_USER_PREFIX}${email.toLowerCase()}`;
       await this.redisService.setJson(pendingKey, pendingUserData, this.PENDING_USER_EXPIRY);
 
@@ -99,7 +109,6 @@ class AuthService {
       }
 
       const { email } = verificationResult;
-
       const pendingKey = `${this.PENDING_USER_PREFIX}${email}`;
       const pendingUserData = await this.redisService.getJson<{
         email: string;
@@ -127,17 +136,9 @@ class AuthService {
       });
 
       const savedUser = await newUser.save();
-
       await this.redisService.del(pendingKey);
 
-      const user: UserType = {
-        id: savedUser._id.toString(),
-        email: savedUser.email,
-        name: savedUser.name,
-        role: savedUser.role,
-        profileImage: savedUser.profileImage
-      };
-
+      const user: UserType = this.convertUserToType(savedUser);
       const tokens = await this.tokenService.generateTokenPair(user);
 
       return { user, tokens };
@@ -224,14 +225,7 @@ class AuthService {
         );
       }
 
-      const userType: UserType = {
-        id: user._id.toString(),
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        profileImage: user.profileImage
-      };
-
+      const userType: UserType = this.convertUserToType(user);
       const tokens = await this.tokenService.generateTokenPair(userType);
 
       return { user: userType, tokens };
@@ -248,7 +242,6 @@ class AuthService {
     }
   }
 
-  
   public async signInWithGoogle(googleToken: string): Promise<AuthResult | string> {
     try {
       const googleUser = await this.verifyGoogleToken(googleToken);
@@ -262,7 +255,7 @@ class AuthService {
       });
 
       if (user) {
-      
+  
         if (!user.googleId && googleUser.id) {
           user.googleId = googleUser.id;
           user.provider = 'google';
@@ -273,18 +266,10 @@ class AuthService {
           await user.save();
         }
 
-        const userType: UserType = {
-          id: user._id.toString(),
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          profileImage: user.profileImage
-        };
-
+        const userType: UserType = this.convertUserToType(user);
         const tokens = await this.tokenService.generateTokenPair(userType);
         return { user: userType, tokens };
       } else {
-       
         const googleTokenKey = `${this.GOOGLE_TOKEN_PREFIX}${googleUser.email}`;
         await this.redisService.setJson(googleTokenKey, {
           googleUser,
@@ -307,10 +292,8 @@ class AuthService {
     }
   }
 
-
   public async completeGoogleRegistration(googleToken: string, role: 'buyer' | 'seller'): Promise<AuthResult> {
     try {
-    
       const googleUser = await this.verifyGoogleToken(googleToken);
       const googleTokenKey = `${this.GOOGLE_TOKEN_PREFIX}${googleUser.email}`;
       
@@ -327,7 +310,6 @@ class AuthService {
           400
         );
       }
-
 
       if (role !== 'buyer' && role !== 'seller') {
         throw new JWTError(
@@ -347,14 +329,7 @@ class AuthService {
       if (existingUser) {
         await this.redisService.del(googleTokenKey);
         
-        const userType: UserType = {
-          id: existingUser._id.toString(),
-          email: existingUser.email,
-          name: existingUser.name,
-          role: existingUser.role,
-          profileImage: existingUser.profileImage
-        };
-
+        const userType: UserType = this.convertUserToType(existingUser);
         const tokens = await this.tokenService.generateTokenPair(userType);
         return { user: userType, tokens };
       }
@@ -370,17 +345,9 @@ class AuthService {
       });
 
       const savedUser = await newUser.save();
-
       await this.redisService.del(googleTokenKey);
 
-      const userType: UserType = {
-        id: savedUser._id.toString(),
-        email: savedUser.email,
-        name: savedUser.name,
-        role: savedUser.role,
-        profileImage: savedUser.profileImage
-      };
-
+      const userType: UserType = this.convertUserToType(savedUser);
       const tokens = await this.tokenService.generateTokenPair(userType);
       return { user: userType, tokens };
     } catch (error) {
@@ -419,13 +386,7 @@ class AuthService {
         return null;
       }
 
-      return {
-        id: user._id.toString(),
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        profileImage: user.profileImage
-      };
+      return this.convertUserToType(user);
     } catch (error) {
       console.error('Get user failed:', error);
       return null;
@@ -478,11 +439,7 @@ class AuthService {
       });
 
       if (!user) {
-        throw new JWTError(
-          JWTErrorType.INVALID_TOKEN,
-          'If this email exists, you will receive a reset link',
-          200
-        );
+        return 'reset-token-placeholder';
       }
 
       const resetToken = crypto.randomBytes(32).toString('hex');
@@ -499,9 +456,6 @@ class AuthService {
 
       return resetToken;
     } catch (error) {
-      if (error instanceof JWTError) {
-        throw error;
-      }
       console.error('Generate reset token failed:', error);
       throw new JWTError(
         JWTErrorType.INVALID_TOKEN,

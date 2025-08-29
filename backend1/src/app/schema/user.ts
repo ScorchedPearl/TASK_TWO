@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export type UserRole = 'buyer' | 'seller';
 
 export interface IUser extends Document {
-  _id: string;
+  _id: mongoose.Types.ObjectId;
   email: string;
   name: string;
   password?: string; 
@@ -66,12 +66,26 @@ const userSchema = new Schema<IUser>({
 }, {
   timestamps: true
 });
-
 userSchema.methods.toJSON = function() {
   const user = this.toObject();
   delete user.password; 
+  user.id = user._id.toString();
+  delete user._id;
+  delete user.__v;
   return user;
 };
+
+userSchema.set('toObject', {
+  transform: function (doc, ret) {
+    const obj = ret as Record<string, any>;
+    obj.id = obj._id.toString();
+    delete obj._id;
+    delete obj.__v;
+    delete obj.password;
+    return obj;
+  }
+});
+
 
 userSchema.statics.findByEmail = function(email: string) {
   return this.findOne({ email: email.toLowerCase() });

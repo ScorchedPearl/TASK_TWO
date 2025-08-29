@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IProduct extends Document {
-  _id: string;
+  _id: mongoose.Types.ObjectId;
   title: string;
   description: string;
   price: number;
@@ -122,6 +122,15 @@ const productSchema = new Schema<IProduct>({
   }
 }, {
   timestamps: true
+});
+
+productSchema.set('toJSON', {
+  transform: function(doc, ret:Record<string, any>) {
+    ret.id = ret._id.toString();
+    delete ret._id;
+    delete ret.__v;
+    return ret;
+  }
 });
 
 productSchema.index({ sellerId: 1 });

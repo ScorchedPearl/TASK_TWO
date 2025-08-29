@@ -11,7 +11,7 @@ export interface IOrderItem {
 }
 
 export interface IOrder extends Document {
-  _id: string;
+  _id: mongoose.Types.ObjectId;
   orderId: string;
   buyerId: string;
   buyerName: string;
@@ -156,6 +156,15 @@ const orderSchema = new Schema<IOrder>({
   hmacSignature: String
 }, {
   timestamps: true
+});
+
+orderSchema.set('toJSON', {
+  transform: function(doc, ret:Record<string, any>) {
+    ret.id = ret._id.toString();
+    delete ret._id;
+    delete ret.__v;
+    return ret;
+  }
 });
 
 orderSchema.index({ buyerId: 1 });

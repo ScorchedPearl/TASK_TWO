@@ -1,10 +1,12 @@
 import { Router, Request, Response } from 'express';
 import ProductService from '../services/productservice';
 import AuthMiddleware from '../middleware/auth';
+import RoleMiddleware from '../middleware/role';
 
 const productRouter = Router();
 const productService = ProductService.getInstance();
 const authMiddleware = AuthMiddleware.getInstance();
+const roleMiddleware = RoleMiddleware.getInstance();
 
 productRouter.get('/', authMiddleware.optionalAuthenticate, async (req: Request, res: Response) => {
   try {
@@ -94,7 +96,105 @@ productRouter.get('/categories', async (req: Request, res: Response) => {
   }
 });
 
-productRouter.post('/', authMiddleware.authenticate, async (req: Request, res: Response) => {
+productRouter.get('/seller/my-products', authMiddleware.authenticate, roleMiddleware.requireSeller, async (req: Request, res: Response) => {
+  try {
+    const sellerId = req.user!.id; 
+    const {
+      page = 1,
+      limit = 12
+    } = req.query;
+
+    const pagination = {
+      page: parseInt(page as string),
+      limit: parseInt(limit as string)
+    };
+
+    const result = await productService.getSellerProducts(sellerId, pagination);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+      message: 'Seller products retrieved successfully'
+    });
+  } catch (error) {
+    console.error('Get seller products error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve seller products',
+      code: 'SERVER_ERROR'
+    });
+  }
+});
+
+productRouter.get('/seller/:sellerId', async (req: Request, res: Response) => {
+  try {
+    const { sellerId } = req.params;
+    const {
+      page = 1,
+      limit = 12
+    } = req.query;
+
+    if (!sellerId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Seller ID is required',
+        code: 'MISSING_SELLER_ID'
+      });
+    }
+
+    const pagination = {
+      page: parseInt(page as string),
+      limit: parseInt(limit as string)
+    };
+
+    const result = await productService.getSellerProducts(sellerId, pagination);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+      message: 'Seller products retrieved successfully'
+    });
+  } catch (error) {
+    console.error('Get seller products error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve seller products',
+      code: 'SERVER_ERROR'
+    });
+  }
+});
+
+productRouter.get('/user/liked', authMiddleware.authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const {
+      page = 1,
+      limit = 12
+    } = req.query;
+
+    const pagination = {
+      page: parseInt(page as string),
+      limit: parseInt(limit as string)
+    };
+
+    const result = await productService.getUserLikedProducts(userId, pagination);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+      message: 'Liked products retrieved successfully'
+    });
+  } catch (error) {
+    console.error('Get liked products error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve liked products',
+      code: 'SERVER_ERROR'
+    });
+  }
+});
+
+productRouter.post('/', authMiddleware.authenticate, roleMiddleware.requireSeller, async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
     const {
@@ -107,10 +207,11 @@ productRouter.post('/', authMiddleware.authenticate, async (req: Request, res: R
       location,
       tags
     } = req.body;
+
     if (!title || !description || !price || !category || !condition || !images || !location) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields',
+        error: 'Missing required fields: title, description, price, category, condition, images, location',
         code: 'MISSING_FIELDS'
       });
     }
@@ -175,7 +276,7 @@ productRouter.get('/:id', authMiddleware.optionalAuthenticate, async (req: Reque
     const { id } = req.params;
     const viewerId = req.user?.id;
 
-    const product = await productService.getProductById(id as any, viewerId as string | undefined);
+    const product = await productService.getProductById(id as string, viewerId);
 
     if (!product) {
       return res.status(404).json({
@@ -205,8 +306,15 @@ productRouter.put('/:id', authMiddleware.authenticate, async (req: Request, res:
     const { id } = req.params;
     const userId = req.user!.id;
     const updateData = req.body;
+    if (updateData.price !== undefined && updateData.price <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Price must be greater than 0',
+        code: 'INVALID_PRICE'
+      });
+    }
 
-    const product = await productService.updateProduct(id as any, userId, updateData);
+    const product = await productService.updateProduct(id as string, userId, updateData);
 
     if (!product) {
       return res.status(404).json({
@@ -236,7 +344,7 @@ productRouter.delete('/:id', authMiddleware.authenticate, async (req: Request, r
     const { id } = req.params;
     const userId = req.user!.id;
 
-    const success = await productService.deleteProduct(id as any, userId);
+    const success = await productService.deleteProduct(id as string, userId);
 
     if (!success) {
       return res.status(404).json({
@@ -259,12 +367,13 @@ productRouter.delete('/:id', authMiddleware.authenticate, async (req: Request, r
     });
   }
 });
+
 productRouter.post('/:id/like', authMiddleware.authenticate, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
 
-    const result = await productService.toggleLike(id as any, userId);
+    const result = await productService.toggleLike(id as string, userId);
 
     res.status(200).json({
       success: true,
@@ -276,75 +385,6 @@ productRouter.post('/:id/like', authMiddleware.authenticate, async (req: Request
     res.status(500).json({
       success: false,
       error: 'Failed to toggle like',
-      code: 'SERVER_ERROR'
-    });
-  }
-});
-productRouter.get('/seller', async (req: Request, res: Response) => {
-  try {
-    const userId = req.user!.role ;
-    console.log(userId)
-    const sellerId=userId;
-
-    const {
-      page = 1,
-      limit = 12
-    } = req.query;
-
-    if (!sellerId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing sellerId parameter',
-        code: 'MISSING_SELLER_ID'
-      });
-    }
-
-    const pagination = {
-      page: parseInt(page as string),
-      limit: parseInt(limit as string)
-    };
-
-    const result = await productService.getSellerProducts(sellerId, pagination);
-
-    res.status(200).json({
-      success: true,
-      data: result,
-      message: 'Seller products retrieved successfully'
-    });
-  } catch (error) {
-    console.error('Get seller products error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to retrieve seller products',
-      code: 'SERVER_ERROR'
-    });
-  }
-});
-productRouter.get('/user/liked', authMiddleware.authenticate, async (req: Request, res: Response) => {
-  try {
-    const userId = req.user!.id;
-    const {
-      page = 1,
-      limit = 12
-    } = req.query;
-
-    const pagination = {
-      page: parseInt(page as string),
-      limit: parseInt(limit as string)
-    };
-
-    const result = await productService.getUserLikedProducts(userId, pagination);
-
-    res.status(200).json({
-      success: true,
-      data: result,
-      message: 'Liked products retrieved successfully'
-    });
-  } catch (error) {
-    console.error('Get liked products error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to retrieve liked products',
       code: 'SERVER_ERROR'
     });
   }

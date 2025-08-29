@@ -12,7 +12,7 @@ export interface ICartItem {
 }
 
 export interface ICart extends Document {
-  _id: string;
+  _id: mongoose.Types.ObjectId;
   userId: string;
   items: ICartItem[];
   totalItems: number;
@@ -84,6 +84,15 @@ const cartSchema = new Schema<ICart>({
 cartSchema.pre('save', function(this: ICart) {
   this.totalItems = this.items.reduce((total, item) => total + item.quantity, 0);
   this.subtotal = this.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+});
+
+cartSchema.set('toJSON', {
+  transform: function(doc, ret:Record<string, any>) {
+    ret.id = ret._id.toString();
+    delete ret._id;
+    delete ret.__v;
+    return ret;
+  }
 });
 
 const Cart = mongoose.model<ICart>('Cart', cartSchema);

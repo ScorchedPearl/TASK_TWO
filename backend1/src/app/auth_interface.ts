@@ -1,36 +1,38 @@
 export interface GoogleTokenResult {
- email:string;
- email_verified:string;
- given_name:string;
- name:string;
- picture:string;
- id:string
+  email: string;
+  email_verified: string;
+  given_name: string;
+  name: string;
+  picture: string;
+  id: string;
 }
 
-export interface JWTPayload extends JWTUser{
- [key: string]: any; 
+export interface JWTPayload extends JWTUser {
+  [key: string]: any; 
+  tokenType?: 'access' | 'refresh';
+  jti?: string;
 }
 
-export interface JWTUser{
- id: string;
- email: string;
- expiresAt: Date;
- name:string;
- role: 'buyer' | 'seller';
- issuedAt: Date;
- tokenId: string;
+export interface JWTUser {
+  id: string;
+  email: string;
+  expiresAt: Date;
+  name: string;
+  role: 'buyer' | 'seller';
+  issuedAt: Date;
+  tokenId: string;
 }
 
-export interface GraphqlContext{
- user?: JWTUser
+export interface GraphqlContext {
+  user?: JWTUser;
 }
 
-export interface User{
- name: string;
- email: string;
- id: string;
- role: 'buyer' | 'seller';
- profileImage?: string | undefined;
+export interface User {
+  id: string; 
+  name: string;
+  email: string;
+  role: 'buyer' | 'seller';
+  profileImage?: string | undefined;
 }
 
 export interface TokenPair {
