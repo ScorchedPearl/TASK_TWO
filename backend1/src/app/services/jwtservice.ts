@@ -68,7 +68,6 @@ class JWTService {
         );
       }
 
-      // Validate role
       if (jwtPayload.role !== 'buyer' && jwtPayload.role !== 'seller') {
         throw new JWTErrorClass(
           ErrorType.INVALID_TOKEN,
