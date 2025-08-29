@@ -9,6 +9,9 @@ import * as dotenv from "dotenv";
 import cartRouter from "./routes/cart";
 import productRouter from "./routes/product";
 import orderRouter from "./routes/order";
+import chatRouter from "./routes/chat";
+import { Server } from "http";
+import WebSocketService from "./services/websocketservice";
 dotenv.config();
 
 export const initServer: () => any = async () => {
@@ -32,5 +35,9 @@ export const initServer: () => any = async () => {
   app.use('/api/products', productRouter);
   app.use('/api/cart', cartRouter);
   app.use('/api/orders', orderRouter);
-  return app;
+  app.use('/api/chat', chatRouter);
+  const server = new Server(app);
+  const wsService = WebSocketService.getInstance();
+  wsService.initialize(server);
+  return { server };
 }
