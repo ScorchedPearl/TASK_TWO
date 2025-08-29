@@ -16,7 +16,7 @@ export default function ProductCard({ product, onUnlike }: ProductCardProps) {
   const handleUnlike = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onUnlike(product._id);
+    onUnlike(product.id);
   };
 
   return (
@@ -28,7 +28,7 @@ export default function ProductCard({ product, onUnlike }: ProductCardProps) {
         'backdrop-blur-xl'
       )}
     >
-      <Link href={`/products/${product._id}`} className="block">
+      <Link href={`/products/${product.id}`} className="block">
   
         <div className="relative w-full h-56 bg-gray-800 overflow-hidden">
           <img

@@ -14,7 +14,7 @@ const getAuthToken = (): string | null => {
 };
 
 export interface Product {
-  _id: string;
+  id: string;
   title: string;
   price: number;
   images: string[];
@@ -81,7 +81,7 @@ export default function WishlistPage() {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
       });
-      setWishlist((prev) => prev.filter(p => p._id !== productId));
+      setWishlist((prev) => prev.filter(p => p.id !== productId));
     } catch (err) {
       console.error("Failed to unlike product", err);
     }
@@ -121,7 +121,7 @@ export default function WishlistPage() {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {wishlist.map((product) => (
-          <ProductCard key={product._id} product={product} onUnlike={handleUnlike} />
+          <ProductCard key={product.id} product={product} onUnlike={handleUnlike} />
         ))}
       </div>
     );
